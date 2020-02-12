@@ -1,0 +1,95 @@
+<html>
+  <head>
+
+    <!-- TODO: Why crossorigin ? -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+
+    <script>
+      // Make this common function shorter to type.
+      const e = React.createElement;
+
+      // Utility functions.
+
+      // intersperse(['a', 'b', 'c'], ' & ') === 'a & b & c'
+      function intersperse(array, toBePlaced) {
+        return [].concat(...array.map(e => [toBePlaced, e])).slice(1);
+      }
+
+      // expandingChunks(['a', 'b', 'c']) === [['a'], ['a', 'b'], ['a', 'b', 'c']]
+      function expandingChunks(array) {
+        const result = [];
+        for (let i = 1; i < array.length; i++) {
+          result.push(array.slice(i));
+        }
+
+        return result;
+      }
+
+      // End utility functions.
+
+      class MusicPlayer extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = {
+            // If we imagine the keys as a directory tree, where are we at in the tree?
+            // Represented as an array of components which would be separated by slashes; e.g. ['a', 'b', 'c'] means that we are at the directory 'a/b/c'.
+            currentDirectory: [],
+          };
+        }
+
+        render() {
+          const currentPrefix = this.getCurrentPrefix();
+
+          // Show only keys which are visible from the current directory.
+          const keysToShow = this.props.keys.map(
+            (key) => key.replace(currentPrefix, '')
+          ).filter(
+            (s) => s !== ""
+          );
+
+          return e('div', {}, keysToShow.map((key) => this.renderKey(key)));
+        }
+
+        renderKey(key) {
+          const segments = key.split('/');
+          const slashSpanElement = e('span', { style: { marginLeft: '5px', marginRight: '5px' }}, '/');
+          const segmentElements = segments.map((s) => e('a', { href: '#', onClick: () => this.onSegmentClicked(s) }, s));
+
+          return e('div', {}, intersperse(segmentElements, slashSpanElement));
+        }
+
+        onSegmentClicked(segment) {
+          this.setState({ });
+        }
+
+        renderBackButton() {
+        }
+
+        getCurrentPrefix() {
+          return this.state.currentDirectory.join('/');
+        }
+      };
+
+      function getPropsFromS3Data(rootNode) {
+        const keys = $(rootNode).find("Contents > Key").toArray().map((node) => node.textContent);
+        return { keys: keys };
+      }
+
+      const s3Url = 'https://elis-music.s3.us-east-2.amazonaws.com/?list-type=2';
+      $(document).ready(() => {
+        $.get(s3Url).then((data) => {
+          ReactDOM.render(
+            React.createElement(MusicPlayer, getPropsFromS3Data(data)),
+            document.getElementById('root'),
+          );
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id='root'/>
+  </body>
+</html>
