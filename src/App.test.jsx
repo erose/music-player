@@ -18,8 +18,8 @@ test('Can navigate to an artist, then an album.', () => {
   const { container, getByText, getByTestId } = render(app);
   
   fireEvent.click(getByText('U2'));
-  expect(getByTestId('current-path')).toHaveTextContent('Current path: U2/');
+  expect(container).toHaveTextContent('U2/');
 
   fireEvent.click(getByText('Songs of Experience'));
-  expect(getByTestId('current-path')).toHaveTextContent('Current path: U2/Songs of Experience/');
+  expect(container).toHaveTextContent('U2/Songs of Experience/');
 });

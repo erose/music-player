@@ -33,15 +33,9 @@ class App extends React.Component {
   }
 
   render() {
-    const currentPath = this.state.currentPath.toString();
-
     return (
       <div>
-        <div data-testid='current-path'>
-          {"Current path: " + this.state.currentPath.toString()}
-        </div>
-        
-        <div>
+        <div style={{marginTop: '1rem'}}>
           {this.visiblePaths().map((path) => this.renderPath(path))}
         </div>
       </div>
@@ -51,7 +45,6 @@ class App extends React.Component {
   visiblePaths() {
     const currentPath = this.state.currentPath;
     const filtered = this.props.paths.filter((path) => path.hasPrefix(currentPath));
-    debugger;
     const summarized = _.uniq(filtered.map((path) => path.slice(0, currentPath.length)));
 
     return summarized;
@@ -74,7 +67,7 @@ class App extends React.Component {
 
       return (
         <span key={subPath}>
-          <button onClick={() => this.onSegmentClicked(new Path(subPath + "/"))}>
+          <button className='segment' onClick={() => this.onSegmentClicked(new Path(subPath + "/"))}>
             {subPath.basename()}
           </button>
           {slashSpanElement}
