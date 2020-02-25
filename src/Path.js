@@ -33,6 +33,14 @@ class Path {
     return result;
   }
 
+  slice(a, b) {
+    return new Path(this.s3Key.split('/').slice(a, b).join('/'));
+  }
+
+  get length() {
+    return this.s3Key.split('/').length;
+  }
+
   toString() {
     return this.s3Key;
   }

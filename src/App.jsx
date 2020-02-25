@@ -35,29 +35,26 @@ class App extends React.Component {
   render() {
     const currentPath = this.state.currentPath.toString();
 
-    // Show the common prefixes of paths which are visible from the current path.
-    const visiblePaths = this.props.paths.filter(
-      (path) => path.hasPrefix(currentPath)
-    ).map(
-      (path) => path.withPrefixRemoved(currentPath)
-    );
-    const visibleTopLevelPaths = this.topLevelPrefixes(visiblePaths);
-
     return (
       <div>
-        <div>{"Current path: " + this.state.currentPath.toString()}</div>
-        <div>{visibleTopLevelPaths.map((path) => this.renderPath(path))}</div>
+        <div data-testid='current-path'>
+          {"Current path: " + this.state.currentPath.toString()}
+        </div>
+        
+        <div>
+          {this.visiblePaths().map((path) => this.renderPath(path))}
+        </div>
       </div>
     );
   }
 
-  // Returns the prefixes that all of the passed-in paths have in common.
-  topLevelPrefixes(paths) {
-    return _.uniq(
-      paths.map((path) => path.toString().split('/')[0])
-    ).map(
-      (s) => new Path(s)
-    );
+  visiblePaths() {
+    const currentPath = this.state.currentPath;
+    const filtered = this.props.paths.filter((path) => path.hasPrefix(currentPath));
+    debugger;
+    const summarized = _.uniq(filtered.map((path) => path.slice(0, currentPath.length)));
+
+    return summarized;
   }
 
   renderPath(path) {
@@ -77,7 +74,7 @@ class App extends React.Component {
 
       return (
         <span key={subPath}>
-          <button onClick={() => this.onSegmentClicked(subPath + "/")}>
+          <button onClick={() => this.onSegmentClicked(new Path(subPath + "/"))}>
             {subPath.basename()}
           </button>
           {slashSpanElement}
