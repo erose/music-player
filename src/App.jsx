@@ -35,6 +35,8 @@ class App extends React.Component {
   render() {
     return (
       <div>
+        {this.state.currentPath.length > 1 ? this.renderCurrentPath() : null}
+
         <div style={{marginTop: '1rem'}}>
           {this.visiblePaths().map((path) => this.renderPath(path))}
         </div>
@@ -42,22 +44,16 @@ class App extends React.Component {
     );
   }
 
-  visiblePaths() {
-    const currentPath = this.state.currentPath;
-    const filtered = this.props.paths.filter((path) => path.hasPrefix(currentPath));
-    const summarized = _.uniq(filtered.map((path) => path.slice(0, currentPath.length)));
+  renderCurrentPath() {
+    // The current path is rendered in segments (e.g. ['U2', 'Songs of Forgiveness', 'One.mp3'],
+    // where each segment can be clicked on to navigate there.
 
-    return summarized;
-  }
+    const segmentElements = this.state.currentPath.subPaths().map((subPath, i, allSubPaths) => {
+      const isLastSegment = i === allSubPaths.length - 1;
 
-  renderPath(path) {
-    // A path is rendered in segments (e.g. ['U2', 'Songs of Forgiveness', 'One.mp3'], where each
-    // segment can be clicked on to navigate there.
-
-    const segmentElements = path.subPaths().map((subPath, i, allSubPaths) => {
       // Include another <span> with a '/' in it, if this isn't the last segment.
       let slashSpanElement = null;
-      if (i !== allSubPaths.length - 1) {
+      if (!isLastSegment) {
         slashSpanElement = (
           <span style={{marginLeft: '5px', marginRight: '5px'}}>
             /
@@ -65,9 +61,16 @@ class App extends React.Component {
         );
       }
 
+      let className = null;
+      if (isLastSegment) {
+        className = 'path last-segment'
+      } else {
+        className = 'path';
+      }
+
       return (
         <span key={subPath}>
-          <button className='segment' onClick={() => this.onSegmentClicked(new Path(subPath + "/"))}>
+          <button className={className} onClick={() => this.onSegmentClicked(new Path(subPath + "/"))}>
             {subPath.basename()}
           </button>
           {slashSpanElement}
@@ -75,17 +78,41 @@ class App extends React.Component {
       );
     });
 
+    return (
+      <div>
+        {segmentElements}
+      </div>
+    );
+  }
+
+  visiblePaths() {
+    const currentPath = this.state.currentPath;
+    const filtered = this.props.paths.filter((path) => path.hasPrefix(currentPath));
+    const summarized = _.uniqBy(
+      filtered.map((path) => path.slice(0, currentPath.length)),
+      (path) => path.toString(),
+    );
+
+    return summarized;
+  }
+
+  renderPath(path) {
     if (path.isPlayable()) {
       return (
-        <div key={path}>
-          <div>{segmentElements}</div>
+        <div style={{ display: 'flex' }} key={path}>
           <Audio url={this.props.s3Url + path.toString()}/>
+
+          <button className='path unclickable'>
+            {path.basename()}
+          </button>
         </div>
       );
     } else {
       return (
         <div key={path}>
-          {segmentElements}
+          <button className='path' onClick={() => this.onSegmentClicked(new Path(path + "/"))}>
+            {path.basename()}
+          </button>
         </div>
       );
     }
