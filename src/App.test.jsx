@@ -1,25 +1,34 @@
 import React from 'react';
-import { render, fireEvent, getByText } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 
 import App from './App';
-import Path from './Path';
 
 // Shared.
 const app = (<App
-  paths={[new Path('U2/Songs of Experience/One.mp3')]}
+  filenames={[
+    'U2/Songs of Experience/01 - Zoo Station.mp3',
+    'U2/Songs of Experience/03 - One.mp3',
+    'U2/Songs of Experience/04 - Until The End Of The World.mp3',
+  ]}
   s3Url={'https://bucketname.s3.us-east-2.amazonaws.com/'}
 />);
 
-test('Renders.', () => {
+test('Can render.', () => {
   render(app);
 });
 
-test('Can navigate to an artist, then an album.', () => {
-  const { container, getByText, getByTestId } = render(app);
-  
-  fireEvent.click(getByText('U2'));
-  expect(container).toHaveTextContent('U2/');
+test('Filtering works.', () => {
+  const { queryByText, getByRole } = render(app);
 
-  fireEvent.click(getByText('Songs of Experience'));
-  expect(container).toHaveTextContent('U2/Songs of Experience/');
+  // Check that all the songs are displaying.
+  expect(queryByText(/Zoo Station/)).toBeTruthy();
+  expect(queryByText(/One/)).toBeTruthy();
+  expect(queryByText(/Until The End Of The World/)).toBeTruthy();
+
+  fireEvent.change(getByRole('searchbox'), { target: { value: 'Zoo' }});
+
+  // Check that just one of the songs is displaying.
+  expect(queryByText(/Zoo Station/)).toBeTruthy();
+  expect(queryByText(/One/)).toBeFalsy();
+  expect(queryByText(/Until The End Of The World/)).toBeFalsy();
 });
