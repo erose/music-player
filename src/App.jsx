@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import './App.css';
+import './App.scss';
 
 import Audio from './Audio';
 
@@ -15,7 +15,8 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      searchString: ''
+      searchString: '',
+      currentlyPlaying: null, // a filename string
     };
   }
 
@@ -35,7 +36,7 @@ class App extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className='App'>
         <input
           placeholder="Search..."
           value={this.state.searchString}
@@ -59,12 +60,16 @@ class App extends React.Component {
 
   renderFile(filename) {
     return (
-      <div style={{ display: 'flex' }} key={filename}>
-        <Audio url={this.props.s3Url + filename}/>
+      <div className='file-container' key={filename}>
+        <Audio
+          url={this.props.s3Url + filename}
+          onPlayPressed={() => this.setState({ currentlyPlaying: filename })}
+          onPausePressed={() => this.setState({ currentlyPlaying: null })}
+        />
 
-        <button className='filename unclickable'>
+        <span className={this.state.currentlyPlaying === filename ? 'filename currently-playing' : 'filename'}>
           {filename}
-        </button>
+        </span>
       </div>
     );
   }

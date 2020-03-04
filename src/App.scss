@@ -1,0 +1,18 @@
+.App {
+  .file-container {
+    display: flex;
+    align-items: center;
+
+    margin-bottom: 0.5rem;
+  }
+
+  .filename {
+    font: 400 10pt Arial;
+    margin-left: 0.25rem;
+    text-align: left;
+
+    &.currently-playing {
+      font-weight: bold;
+    }
+  }
+}

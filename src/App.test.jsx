@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { render, getByRole, fireEvent } from '@testing-library/react';
 
 import App from './App';
 
@@ -32,3 +32,21 @@ test('Filtering works.', () => {
   expect(queryByText(/One/)).toBeFalsy();
   expect(queryByText(/Until The End Of The World/)).toBeFalsy();
 });
+
+test('Clicking on a song toggles a class name.', () => {
+  const { getByText } = render(app);
+  expect(getByText(/Zoo Station/)).not.toHaveClass('currently-playing');
+
+  const container = getByText(/Zoo Station/).parentElement;
+  fireEvent.click(getByRole(container, 'button'));
+
+  expect(getByText(/Zoo Station/)).toHaveClass('currently-playing');
+
+  // We need to get through the 'loading' phase, so we manually fire the canPlay event.
+  const audioElement = getByRole(container, 'button').getElementsByTagName('audio')[0];
+  fireEvent.canPlay(audioElement);
+
+  fireEvent.click(getByRole(container, 'button'));
+
+  expect(getByText(/Zoo Station/)).not.toHaveClass('currently-playing');
+})
