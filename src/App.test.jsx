@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { act, render, fireEvent } from '@testing-library/react';
 
 import App from './App';
 
@@ -80,4 +80,24 @@ test('Play the next song after this one finishes.', () => {
 
   // Check that the next song is playing.
   expect(getByText(/One/)).toHaveClass('playing');
+});
+
+test('Searching and then clicking back undoes the search.', () => {
+  const { queryByText, getByRole } = render(app);
+
+  fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
+  jest.advanceTimersByTime(1000); // wait 1 second
+
+  // Check that all of the songs are displaying.
+  expect(queryByText(/Zoo Station/)).toBeTruthy();
+  expect(queryByText(/One/)).toBeTruthy();
+  expect(queryByText(/Until The End Of The World/)).toBeTruthy();
+
+  // jsdom doesn't handle navigation, so we manually fire the popState event.
+  fireEvent.popState(document)
+
+  // Check that none of the songs are displaying.
+  expect(queryByText(/Zoo Station/)).toBeFalsy();
+  expect(queryByText(/One/)).toBeFalsy();
+  expect(queryByText(/Until The End Of The World/)).toBeFalsy();
 });

@@ -31,22 +31,30 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    this.updateVisibleFiles();
+    this.updateVisibleFiles(this.state.searchString);
 
     // Allows use of the 'back' button to go between searches.
-    window.addEventListener('popstate', (event) => this.handleOnPopState(event));
+    window.addEventListener('popstate', this.handleOnPopState);
   }
 
   componentWillUnmount() {
     // Allows use of the 'back' button to go between searches.
-    window.removeEventListener('popstate', (event) => this.handleOnPopState(event));
+    window.removeEventListener('popstate', this.handleOnPopState);
+
+    // Cancel any doSearches that may be waiting to run.
+    if (this.currentTimeoutId) {
+      clearTimeout(this.currentTimeoutId);
+    }
   }
 
-  handleOnPopState(event) {
+  handleOnPopState = (event) => {
+    let searchString = '';
     if (event.state) {
-      this.setState({ searchString: event.state.searchString });
-      this.updateVisibleFiles();
+      searchString = event.state.searchString;
     }
+
+    this.setState({ searchString, });
+    this.updateVisibleFiles(searchString);
   }
 
   render() {
@@ -108,7 +116,7 @@ class App extends React.Component {
   }
 
   doSearch(string) {
-    this.updateVisibleFiles();
+    this.updateVisibleFiles(string);
     this.saveSearchString(string);
   }
 
@@ -125,14 +133,14 @@ class App extends React.Component {
       '',
       window.location.origin + window.location.pathname + '?' + urlParams.toString()
     );
-
   }
 
-  updateVisibleFiles() {
-    const downcasedSearchString = this.state.searchString.toLowerCase();
+  updateVisibleFiles(searchString) {
+    const downcasedSearchString = searchString.toLowerCase();
     // Display no files on an empty search.
     if (downcasedSearchString === '') {
-      return [];
+      this.setState({ visibleFiles: [] });
+      return;
     }
     
     const filtered = this.props.filenames.filter(
