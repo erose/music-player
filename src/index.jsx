@@ -8,8 +8,8 @@ import App from './App.jsx';
 // Globals.
 const s3Url = 'https://elis-music.s3.us-east-2.amazonaws.com/';
 
-async function getProps() {
-  const filenames = [];
+async function getKeysInS3Bucket() {
+  const keys = [];
   let continuationToken = null;
 
   while (true) {
@@ -19,19 +19,20 @@ async function getProps() {
     }
     const response = await fetch(s3Url + '?' + paramString);
     const xml = await response.text();
-    filenames.push(...$(xml).find("Contents > Key").toArray().map((node) => node.textContent));
+    const newkeys = $(xml).find("Contents > Key").toArray().map((node) => node.textContent);
+    keys.push(...newkeys);
 
     if ($(xml).find("IsTruncated").text() !== 'true') { break; }
     continuationToken = $(xml).find("NextContinuationToken").text();
   }
-  return { filenames, s3Url, };
+  return keys;
 }
 
 $(document).ready(async () => {
-  const appProps = await getProps();
+  const keys = await getKeysInS3Bucket();
 
   ReactDOM.render(
-    <App {...appProps}/>,
+    <App filenames={keys} s3Url={s3Url}/>,
     document.getElementById('root')
   );
 });
