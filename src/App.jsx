@@ -9,6 +9,8 @@ class App extends React.Component {
   static propTypes = {
     filenames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
     s3Url: PropTypes.string.isRequired,
+
+    searchString: PropTypes.string, // Optional; what to initialize the searchString prop to.
   };
 
   constructor(props) {
@@ -19,27 +21,31 @@ class App extends React.Component {
       // through all filenames is expensive, so we don't want to do it on every keystroke. Instead
       // we want to do it when the user pauses typing. So while they're in the middle of typing,
       // we'll have some text in the input box that we haven't actually done a search with yet. We
-      // need to represent this intermediate state.
-      
+      // need to represent this intermediate state, so we need to store 1) 'searchString', the thing
+      // to be searched, separately from 2) 'visibleFiles', the result of the search.
       visibleFiles: [],
-      searchString: '',
-      currentTimeoutId: null, // implementation detail.
-
+      searchString: props.searchString || '',
+      
       currentlyPlaying: [], // a list of filename strings (many songs can be playing at once).
     };
   }
 
   componentDidMount() {
+    this.updateVisibleFiles();
+
+    // Allows use of the 'back' button to go between searches.
     window.addEventListener('popstate', (event) => this.handleOnPopState(event));
   }
 
   componentWillUnmount() {
+    // Allows use of the 'back' button to go between searches.
     window.removeEventListener('popstate', (event) => this.handleOnPopState(event));
   }
 
   handleOnPopState(event) {
     if (event.state) {
       this.setState({ searchString: event.state.searchString });
+      this.updateVisibleFiles();
     }
   }
 
@@ -93,21 +99,33 @@ class App extends React.Component {
     this.setState({ searchString: string });
 
     // Stop the previous update, if any, from happening; this new one supersedes it.
-    if (this.state.currentTimeoutId) {
-      clearTimeout(this.state.currentTimeoutId);
+    if (this.currentTimeoutId) {
+      clearTimeout(this.currentTimeoutId);
     }
 
     const delay = 750; // ms
-    const id = setTimeout(() => this.doSearch(string), delay);
-    this.setState({ currentTimeoutId: id });
+    this.currentTimeoutId = setTimeout(() => this.doSearch(string), delay);
   }
 
   doSearch(string) {
     this.updateVisibleFiles();
-    // Store the previous state in the browser's history.
-    //   - Note that two arguments are required, but most browsers ignore the second argument so we
-    //     pass the empty string. https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
-    window.history.pushState({ searchString: string }, '');
+    this.saveSearchString(string);
+  }
+
+  // Store the search string in the URL as a queryparam so we can share a link to this search with
+  // others, and so we can come back to this search using the back button.
+  saveSearchString(string) {
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('search', string);
+    
+    // See https://developer.mozilla.org/en-US/docs/Web/API/History/pushState . In particular: most
+    // browsers ignore the second argument so we pass the empty string.
+    window.history.pushState(
+      { searchString: string },
+      '',
+      window.location.origin + window.location.pathname + '?' + urlParams.toString()
+    );
+
   }
 
   updateVisibleFiles() {

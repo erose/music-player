@@ -23,4 +23,6 @@ TODOS:
     - Tests: X
   - Preserve album order.
   - Search string should show up as a queryparam (and be loaded from a queryparam.)
+    - Implementation: X
+    - Tests: O
   - Don't wait until the data is loaded to render the search box.

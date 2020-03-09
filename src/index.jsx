@@ -31,8 +31,11 @@ async function getKeysInS3Bucket() {
 $(document).ready(async () => {
   const keys = await getKeysInS3Bucket();
 
+  // Try to extract searchString from queryparams; if it's not present, the result will be null.
+  const searchString = (new URLSearchParams(window.location.search)).get('search');
+
   ReactDOM.render(
-    <App filenames={keys} s3Url={s3Url}/>,
+    <App filenames={keys} s3Url={s3Url} searchString={searchString}/>,
     document.getElementById('root')
   );
 });
