@@ -25,7 +25,7 @@ class App extends React.Component {
       searchString: '',
       currentTimeoutId: null, // implementation detail.
 
-      currentlyPlaying: null, // a filename string
+      currentlyPlaying: [], // a list of filename strings (many songs can be playing at once).
     };
   }
 
@@ -62,7 +62,7 @@ class App extends React.Component {
   }
 
   renderFile(filename) {
-    const isPlaying = filename === this.state.currentlyPlaying;
+    const isPlaying = this.state.currentlyPlaying.includes(filename);
     // 'key' is necessary because we want to create a new component when the song is played, rather
     // than updating the existing component instance. We want to do this because we need to reset
     // state. See
@@ -77,8 +77,8 @@ class App extends React.Component {
           isPlaying={isPlaying}
           key={key}
 
-          onPlayPressed={() => this.setState({ currentlyPlaying: filename })}
-          onPausePressed={() => this.setState({ currentlyPlaying: null })}
+          onPlayPressed={() => this.startPlaying(filename)}
+          onPausePressed={() => this.stopPlaying(filename)}
           onEnded={() => this.onEnded(filename)}
         />
 
@@ -112,7 +112,8 @@ class App extends React.Component {
 
   updateVisibleFiles() {
     const downcasedSearchString = this.state.searchString.toLowerCase();
-    if (downcasedSearchString === '') { // Display no files initially.
+    // Display no files on an empty search.
+    if (downcasedSearchString === '') {
       return [];
     }
     
@@ -127,10 +128,19 @@ class App extends React.Component {
     const nextUpSongIndex = justEndedSongIndex + 1;
 
     if (nextUpSongIndex < this.state.visibleFiles.length) {
-      this.setState({ currentlyPlaying: this.state.visibleFiles[nextUpSongIndex] });
+      const nextSong = this.state.visibleFiles[nextUpSongIndex];
+      this.startPlaying(nextSong);
     } else {
       // If we're at the end, do nothing.
     }
+  }
+
+  startPlaying(filename) {
+    this.setState({ currentlyPlaying: this.state.currentlyPlaying.concat(filename) });
+  }
+
+  stopPlaying(filename) {
+    this.setState({ currentlyPlaying: this.state.currentlyPlaying.filter((f) => f !== filename) })
   }
 }
 
