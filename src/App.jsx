@@ -15,7 +15,17 @@ class App extends React.Component {
     super(props);
 
     this.state = {
+      // These pieces of state are for the search feature. The main challenge is that searching
+      // through all filenames is expensive, so we don't want to do it on every keystroke. Instead
+      // we want to do it when the user pauses typing. So while they're in the middle of typing,
+      // we'll have some text in the input box that we haven't actually done a search with yet. We
+      // need to represent this intermediate state.
+      // 'searchString' is what the current search is for.
       searchString: '',
+      // 'searchInputValue' is the contents of the search box.
+      searchInputValue: '',
+      currentTimeoutId: null, // implementation detail.
+
       currentlyPlaying: null, // a filename string
     };
   }
@@ -39,7 +49,8 @@ class App extends React.Component {
       <div className='App'>
         <input
           placeholder="Search..."
-          value={this.state.searchString}
+          autoFocus={true}
+          value={this.state.searchInputValue}
           role={'searchbox'}
           onChange={(event) => this.onSearchTermChanged(event.target.value)}
         />
@@ -53,8 +64,11 @@ class App extends React.Component {
 
   visibleFiles() {
     const searchString = this.state.searchString;
+    if (searchString === '') { // Display no files initially.
+      return [];
+    }
+    
     const filtered = this.props.filenames.filter((filename) => filename.includes(searchString));
-
     return filtered;
   }
 
@@ -75,11 +89,24 @@ class App extends React.Component {
   }
 
   onSearchTermChanged(string) {
+    this.setState({ searchInputValue: string });
+
+    // Stop the previous update, if any, from happening; this new one supersedes it.
+    if (this.state.currentTimeoutId) {
+      clearTimeout(this.state.currentTimeoutId);
+    }
+
+    const delay = 750; // ms
+    const id = setTimeout(() => this.updateSearchString(string), delay);
+    this.setState({ currentTimeoutId: id });
+  }
+
+  updateSearchString(string) {
+    this.setState({ searchString: string });
     // Store the previous state in the browser's history.
     //   - Note that two arguments are required, but most browsers ignore the second argument so we
     //     pass the empty string. https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
     window.history.pushState({ searchString: string }, '');
-    this.setState({ searchString: string });
   }
 }
 
