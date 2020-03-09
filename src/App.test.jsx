@@ -1,7 +1,10 @@
 import React from 'react';
-import { render, getByRole, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 
 import App from './App';
+
+// When code calls setTimeout, we don't want to actually have to wait.
+jest.useFakeTimers();
 
 // Shared.
 const app = (<App
@@ -20,12 +23,16 @@ test('Can render.', () => {
 test('Filtering works.', () => {
   const { queryByText, getByRole } = render(app);
 
-  // Check that all the songs are displaying.
+  fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
+  jest.advanceTimersByTime(1000); // wait 1 second
+
+  // Check that all of the songs are displaying.
   expect(queryByText(/Zoo Station/)).toBeTruthy();
   expect(queryByText(/One/)).toBeTruthy();
   expect(queryByText(/Until The End Of The World/)).toBeTruthy();
 
   fireEvent.change(getByRole('searchbox'), { target: { value: 'Zoo' }});
+  jest.advanceTimersByTime(1000); // wait 1 second
 
   // Check that just one of the songs is displaying.
   expect(queryByText(/Zoo Station/)).toBeTruthy();
@@ -34,19 +41,21 @@ test('Filtering works.', () => {
 });
 
 test('Clicking on a song toggles a class name.', () => {
-  const { getByText } = render(app);
+  const { getByText, getByRole } = render(app);
+  fireEvent.change(getByRole('searchbox'), { target: { value: 'Zoo' }});
+  jest.advanceTimersByTime(1000); // wait 1 second
+
   expect(getByText(/Zoo Station/)).not.toHaveClass('currently-playing');
 
-  const container = getByText(/Zoo Station/).parentElement;
-  fireEvent.click(getByRole(container, 'button'));
+  fireEvent.click(screen.getByRole('button'));
 
   expect(getByText(/Zoo Station/)).toHaveClass('currently-playing');
 
   // We need to get through the 'loading' phase, so we manually fire the canPlay event.
-  const audioElement = getByRole(container, 'button').getElementsByTagName('audio')[0];
+  const audioElement = screen.getByRole('button').getElementsByTagName('audio')[0];
   fireEvent.canPlay(audioElement);
 
-  fireEvent.click(getByRole(container, 'button'));
+  fireEvent.click(screen.getByRole('button'));
 
   expect(getByText(/Zoo Station/)).not.toHaveClass('currently-playing');
 })
