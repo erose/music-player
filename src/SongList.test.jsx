@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 
-import App from './App';
+import SongList from './SongList';
 
 // When code calls setTimeout, we don't want to actually have to wait.
 jest.useFakeTimers();
 
 // Shared.
-const app = (<App
+const songList = (<SongList
   filenames={[
     'U2/Songs of Experience/01 - Zoo Station.mp3',
     'U2/Songs of Experience/03 - One.mp3',
@@ -17,11 +17,11 @@ const app = (<App
 />);
 
 test('Can render.', () => {
-  render(app);
+  render(songList);
 });
 
 test('Filtering works.', () => {
-  const { queryByText, getByRole } = render(app);
+  const { queryByText, getByRole } = render(songList);
 
   fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
   jest.advanceTimersByTime(1000); // wait 1 second
@@ -46,7 +46,7 @@ test('Filtering works.', () => {
 });
 
 test('Clicking on a song toggles a class name.', () => {
-  const { getByText, getByRole } = render(app);
+  const { getByText, getByRole } = render(songList);
   fireEvent.change(getByRole('searchbox'), { target: { value: 'Zoo' }});
   jest.advanceTimersByTime(1000); // wait 1 second
 
@@ -66,7 +66,7 @@ test('Clicking on a song toggles a class name.', () => {
 });
 
 test('Play the next song after this one finishes.', () => {
-  const { getAllByRole, getByText, getByRole } = render(app);
+  const { getAllByRole, getByText, getByRole } = render(songList);
 
   fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
   jest.advanceTimersByTime(1000); // wait 1 second
@@ -83,7 +83,7 @@ test('Play the next song after this one finishes.', () => {
 });
 
 test('Searching and then clicking back undoes the search.', () => {
-  const { queryByText, getByRole } = render(app);
+  const { queryByText, getByRole } = render(songList);
 
   fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
   jest.advanceTimersByTime(1000); // wait 1 second
@@ -103,7 +103,7 @@ test('Searching and then clicking back undoes the search.', () => {
 });
 
 test('Searching populates a query param.', () => {
-  const { queryByText, getByRole } = render(app);
+  const { queryByText, getByRole } = render(songList);
 
   fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
   jest.advanceTimersByTime(1000); // wait 1 second

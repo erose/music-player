@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import './App.scss';
+import './SongList.scss';
 
 import Audio from './Audio';
 
-class App extends React.Component {
+class SongList extends React.Component {
   static propTypes = {
     filenames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
     s3Url: PropTypes.string.isRequired,
@@ -59,7 +59,7 @@ class App extends React.Component {
 
   render() {
     return (
-      <div className='App'>
+      <div className='SongList'>
         <input
           placeholder="Search..."
           autoFocus={true}
@@ -170,4 +170,4 @@ class App extends React.Component {
   }
 }
 
-export default App;
+export default SongList;
