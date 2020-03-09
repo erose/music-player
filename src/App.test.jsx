@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render, fireEvent } from '@testing-library/react';
+import { render, fireEvent } from '@testing-library/react';
 
 import App from './App';
 
@@ -36,8 +36,8 @@ test('Filtering works.', () => {
 
   // Check that just one of the songs is displaying.
   expect(queryByText(/Zoo Station/)).toBeTruthy();
-  expect(queryByText(/One/)).toBeFalsy();
-  expect(queryByText(/Until The End Of The World/)).toBeFalsy();
+  expect(queryByText(/One/)).toBeNull();
+  expect(queryByText(/Until The End Of The World/)).toBeNull();
 
   // Check that filtering is case-insensitive.
   fireEvent.change(getByRole('searchbox'), { target: { value: 'zoo' }});
@@ -97,7 +97,16 @@ test('Searching and then clicking back undoes the search.', () => {
   fireEvent.popState(document)
 
   // Check that none of the songs are displaying.
-  expect(queryByText(/Zoo Station/)).toBeFalsy();
-  expect(queryByText(/One/)).toBeFalsy();
-  expect(queryByText(/Until The End Of The World/)).toBeFalsy();
+  expect(queryByText(/Zoo Station/)).toBeNull();
+  expect(queryByText(/One/)).toBeNull();
+  expect(queryByText(/Until The End Of The World/)).toBeNull();
+});
+
+test('Searching populates a query param.', () => {
+  const { queryByText, getByRole } = render(app);
+
+  fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
+  jest.advanceTimersByTime(1000); // wait 1 second
+
+  expect(window.location.search).toBe('?search=U2');
 });
