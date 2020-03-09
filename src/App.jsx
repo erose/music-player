@@ -73,15 +73,27 @@ class App extends React.Component {
   }
 
   renderFile(filename) {
+    const isPlaying = filename === this.state.currentlyPlaying;
+    // 'key' is necessary because we want to create a new component when the song is played, rather
+    // than updating the existing component instance. We want to do this because we need to reset
+    // state. See
+    // https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html#recommendation-fully-uncontrolled-component-with-a-key
+    // .
+    const key = `${filename}-${isPlaying}`;
+
     return (
       <div className='file-container' key={filename}>
         <Audio
           url={this.props.s3Url + filename}
+          isPlaying={isPlaying}
+          key={key}
+
           onPlayPressed={() => this.setState({ currentlyPlaying: filename })}
           onPausePressed={() => this.setState({ currentlyPlaying: null })}
+          onEnded={() => this.onEnded(filename)}
         />
 
-        <span className={this.state.currentlyPlaying === filename ? 'filename currently-playing' : 'filename'}>
+        <span className={isPlaying ? 'filename playing' : 'filename'}>
           {filename}
         </span>
       </div>
@@ -107,6 +119,19 @@ class App extends React.Component {
     //   - Note that two arguments are required, but most browsers ignore the second argument so we
     //     pass the empty string. https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
     window.history.pushState({ searchString: string }, '');
+  }
+
+  onEnded(filename) {
+    const visibleFiles = this.visibleFiles();
+
+    const justEndedSongIndex = visibleFiles.indexOf(filename);
+    const nextUpSongIndex = justEndedSongIndex + 1;
+
+    if (nextUpSongIndex < visibleFiles.length) {
+      this.setState({ currentlyPlaying: visibleFiles[nextUpSongIndex] });
+    } else {
+      // If we're at the end, do nothing.
+    }
   }
 }
 

@@ -19,6 +19,8 @@ OK, I like the S3 idea.
 
 TODOS:
   - Play the next song (within album?) after you're finished.
+    - Implementation: X
+    - Tests: O
   - Search string should show up as a queryparam (and be loaded from a queryparam.)
   - Bold the search match text.
   - Don't wait until the data is loaded to render the search box.

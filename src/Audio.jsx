@@ -4,28 +4,29 @@ import PropTypes from 'prop-types';
 import './Audio.scss';
 
 // Enum.
-const notPlaying = 'notPlaying';
 const loading = 'loading';
-const playing = 'playing';
+const loaded = 'loaded';
 
 class Audio extends React.Component {
   static propTypes = {
     url: PropTypes.string.isRequired,
+    isPlaying: PropTypes.bool.isRequired,
 
-    onPlayPressed: PropTypes.func,
-    onPausePressed: PropTypes.func,
+    onPlayPressed: PropTypes.func.isRequired,
+    onPausePressed: PropTypes.func.isRequired,
+    onEnded: PropTypes.func,
   };
 
   constructor(props) {
     super(props);
 
     this.state = {
-      status: notPlaying,
+      loadingStatus: props.isPlaying ? loading : null,
     }
   }
 
   render() {
-    if (this.state.status === notPlaying) {
+    if (!this.props.isPlaying) {
       return (
         <div className='Audio'>
           <div className='play-pause-symbol-container' role="button" onClick={() => this.onPlayPressed()}>
@@ -35,7 +36,9 @@ class Audio extends React.Component {
       );
     }
 
-    if (this.state.status === loading) {
+    if (this.state.loadingStatus === loading) {
+      // The point of this <audio> element is just to load the file. It will actually be played by
+      // the <audio> element that is rendered in the other case of this function.
       return (
         <div className='Audio'>
           <div className='loading-spinner-container' role="button">
@@ -49,13 +52,13 @@ class Audio extends React.Component {
       );
     }
 
-    if (this.state.status === playing) {
+    if (this.state.loadingStatus === loaded) {
       return (
         <div className='Audio'>
           <div className='play-pause-symbol-container' role="button" onClick={() => this.onPausePressed()}>
             <span role="img" className='pause-symbol' aria-label="Pause">⏸️</span>
             
-            <audio autoPlay={true}>
+            <audio autoPlay={true} onEnded={() => this.props.onEnded()}>
               <source src={this.props.url}/>
             </audio>
           </div>
@@ -65,16 +68,14 @@ class Audio extends React.Component {
   }
 
   onPlayPressed() {
-    this.setState({ status: loading });
     this.props.onPlayPressed();
   }
 
   onLoadingFinished() {
-    this.setState({ status: playing });
+    this.setState({ loadingStatus: loaded });
   }
 
   onPausePressed() {
-    this.setState({ status: notPlaying });
     this.props.onPausePressed();
   }
 }
