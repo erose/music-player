@@ -20,10 +20,9 @@ class App extends React.Component {
       // we want to do it when the user pauses typing. So while they're in the middle of typing,
       // we'll have some text in the input box that we haven't actually done a search with yet. We
       // need to represent this intermediate state.
-      // 'searchString' is what the current search is for.
+      
+      visibleFiles: [],
       searchString: '',
-      // 'searchInputValue' is the contents of the search box.
-      searchInputValue: '',
       currentTimeoutId: null, // implementation detail.
 
       currentlyPlaying: null, // a filename string
@@ -50,26 +49,16 @@ class App extends React.Component {
         <input
           placeholder="Search..."
           autoFocus={true}
-          value={this.state.searchInputValue}
+          value={this.state.searchString}
           role={'searchbox'}
           onChange={(event) => this.onSearchTermChanged(event.target.value)}
         />
 
         <div style={{marginTop: '1rem'}}>
-          {this.visibleFiles().map((filename) => this.renderFile(filename))}
+          {this.state.visibleFiles.map((filename) => this.renderFile(filename))}
         </div>
       </div>
     );
-  }
-
-  visibleFiles() {
-    const searchString = this.state.searchString;
-    if (searchString === '') { // Display no files initially.
-      return [];
-    }
-    
-    const filtered = this.props.filenames.filter((filename) => filename.includes(searchString));
-    return filtered;
   }
 
   renderFile(filename) {
@@ -101,7 +90,7 @@ class App extends React.Component {
   }
 
   onSearchTermChanged(string) {
-    this.setState({ searchInputValue: string });
+    this.setState({ searchString: string });
 
     // Stop the previous update, if any, from happening; this new one supersedes it.
     if (this.state.currentTimeoutId) {
@@ -109,26 +98,36 @@ class App extends React.Component {
     }
 
     const delay = 750; // ms
-    const id = setTimeout(() => this.updateSearchString(string), delay);
+    const id = setTimeout(() => this.doSearch(string), delay);
     this.setState({ currentTimeoutId: id });
   }
 
-  updateSearchString(string) {
-    this.setState({ searchString: string });
+  doSearch(string) {
+    this.updateVisibleFiles();
     // Store the previous state in the browser's history.
     //   - Note that two arguments are required, but most browsers ignore the second argument so we
     //     pass the empty string. https://developer.mozilla.org/en-US/docs/Web/API/History/pushState
     window.history.pushState({ searchString: string }, '');
   }
 
-  onEnded(filename) {
-    const visibleFiles = this.visibleFiles();
+  updateVisibleFiles() {
+    const downcasedSearchString = this.state.searchString.toLowerCase();
+    if (downcasedSearchString === '') { // Display no files initially.
+      return [];
+    }
+    
+    const filtered = this.props.filenames.filter(
+      (filename) => filename.toLowerCase().includes(downcasedSearchString)
+    );
+    this.setState({ visibleFiles: filtered });
+  }
 
-    const justEndedSongIndex = visibleFiles.indexOf(filename);
+  onEnded(filename) {
+    const justEndedSongIndex = this.state.visibleFiles.indexOf(filename);
     const nextUpSongIndex = justEndedSongIndex + 1;
 
-    if (nextUpSongIndex < visibleFiles.length) {
-      this.setState({ currentlyPlaying: visibleFiles[nextUpSongIndex] });
+    if (nextUpSongIndex < this.state.visibleFiles.length) {
+      this.setState({ currentlyPlaying: this.state.visibleFiles[nextUpSongIndex] });
     } else {
       // If we're at the end, do nothing.
     }

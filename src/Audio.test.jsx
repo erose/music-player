@@ -38,7 +38,7 @@ test('Clicking pause triggers the callback', () => {
   expect(mockCallback).toHaveBeenCalled();
 });
 
-test('Plays immediately upon render when startPlaying is set.', () => {
+test('Audio can be played.', () => {
   const { getByRole, queryByLabelText } = render(
     <Audio url={url} isPlaying={true} onPlayPressed={id} onPausePressed={id}/>
   );

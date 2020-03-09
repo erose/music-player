@@ -38,6 +38,11 @@ test('Filtering works.', () => {
   expect(queryByText(/Zoo Station/)).toBeTruthy();
   expect(queryByText(/One/)).toBeFalsy();
   expect(queryByText(/Until The End Of The World/)).toBeFalsy();
+
+  // Check that filtering is case-insensitive.
+  fireEvent.change(getByRole('searchbox'), { target: { value: 'zoo' }});
+  jest.advanceTimersByTime(1000); // wait 1 second
+  expect(queryByText(/Zoo Station/)).toBeTruthy();
 });
 
 test('Clicking on a song toggles a class name.', () => {
@@ -58,4 +63,21 @@ test('Clicking on a song toggles a class name.', () => {
   fireEvent.click(getByRole('button'));
 
   expect(getByText(/Zoo Station/)).not.toHaveClass('playing');
-})
+});
+
+test('Play the next song after this one finishes.', () => {
+  const { getAllByRole, getByText, getByRole } = render(app);
+
+  fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
+  jest.advanceTimersByTime(1000); // wait 1 second
+
+  fireEvent.click(getAllByRole('button')[0]);
+  // We need to get through the 'loading' phase, so we manually fire the canPlay event.
+  const audioElement = getAllByRole('button')[0].getElementsByTagName('audio')[0];
+  fireEvent.canPlay(audioElement);
+  // And then we jump forward to when the song has ended by firing the ended event.
+  fireEvent.ended(audioElement);
+
+  // Check that the next song is playing.
+  expect(getByText(/One/)).toHaveClass('playing');
+});
