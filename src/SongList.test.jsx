@@ -78,6 +78,9 @@ test('Play the next song after this one finishes.', () => {
   // And then we jump forward to when the song has ended by firing the ended event.
   fireEvent.ended(audioElement);
 
+  // Check that the previous song is not playing.
+  expect(getByText(/Zoo Station/)).not.toHaveClass('playing');
+
   // Check that the next song is playing.
   expect(getByText(/One/)).toHaveClass('playing');
 });

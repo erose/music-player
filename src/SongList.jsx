@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 
 import './SongList.scss';
 
@@ -7,7 +8,7 @@ import Audio from './Audio';
 
 class SongList extends React.Component {
   static propTypes = {
-    filenames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+    filenames: PropTypes.arrayOf(PropTypes.string.isRequired), // may be null if we haven't loaded the data yet.
     s3Url: PropTypes.string.isRequired,
 
     searchString: PropTypes.string, // Optional; what to initialize the searchString prop to.
@@ -23,7 +24,7 @@ class SongList extends React.Component {
       // we'll have some text in the input box that we haven't actually done a search with yet. We
       // need to represent this intermediate state, so we need to store 1) 'searchString', the thing
       // to be searched, separately from 2) 'visibleFiles', the result of the search.
-      visibleFiles: [],
+      visibleFiles: props.filenames === null ? null : [],
       searchString: props.searchString || '',
       
       currentlyPlaying: [], // a list of filename strings (many songs can be playing at once).
@@ -31,8 +32,6 @@ class SongList extends React.Component {
   }
 
   componentDidMount() {
-    this.updateVisibleFiles(this.state.searchString);
-
     // Allows use of the 'back' button to go between searches.
     window.addEventListener('popstate', this.handleOnPopState);
   }
@@ -54,10 +53,22 @@ class SongList extends React.Component {
     }
 
     this.setState({ searchString, });
-    this.updateVisibleFiles(searchString);
+    this.doSearch(searchString);
+  }
+
+  // If the available filenames change, we need to redo our search. 
+  componentDidUpdate(prevProps, _prevState, _snapshot) {
+    if (_.isEqual(this.props.filenames, prevProps.filenames)) {
+      return;
+    }
+
+    this.doSearch(this.state.searchString);
   }
 
   render() {
+    const visibleFiles = this.state.visibleFiles;
+    const loadingIndicator = <span>Loading...</span>; // TODO: Make it cool.
+
     return (
       <div className='SongList'>
         <input
@@ -69,13 +80,13 @@ class SongList extends React.Component {
         />
 
         <div style={{marginTop: '1rem'}}>
-          {this.state.visibleFiles.map((filename) => this.renderFile(filename))}
+          {(visibleFiles && visibleFiles.map(this.renderFile)) || loadingIndicator}
         </div>
       </div>
     );
   }
 
-  renderFile(filename) {
+  renderFile = (filename) => {
     const isPlaying = this.state.currentlyPlaying.includes(filename);
     // 'key' is necessary because we want to create a new component when the song is played, rather
     // than updating the existing component instance. We want to do this because we need to reset
@@ -106,36 +117,20 @@ class SongList extends React.Component {
   onSearchTermChanged(string) {
     this.setState({ searchString: string });
 
-    // Stop the previous update, if any, from happening; this new one supersedes it.
+    // Stop the previous search, if any, from happening; this new one supersedes it.
     if (this.currentTimeoutId) {
       clearTimeout(this.currentTimeoutId);
     }
 
     const delay = 750; // ms
-    this.currentTimeoutId = setTimeout(() => this.doSearch(string), delay);
+    this.currentTimeoutId = setTimeout(() => {
+      this.doSearch(string);
+      this.saveSearchString(string);
+    }, delay);
   }
 
-  doSearch(string) {
-    this.updateVisibleFiles(string);
-    this.saveSearchString(string);
-  }
-
-  // Store the search string in the URL as a queryparam so we can share a link to this search with
-  // others, and so we can come back to this search using the back button.
-  saveSearchString(string) {
-    const urlParams = new URLSearchParams(window.location.search);
-    urlParams.set('search', string);
-    
-    // See https://developer.mozilla.org/en-US/docs/Web/API/History/pushState . In particular: most
-    // browsers ignore the second argument so we pass the empty string.
-    window.history.pushState(
-      { searchString: string },
-      '',
-      window.location.origin + window.location.pathname + '?' + urlParams.toString()
-    );
-  }
-
-  updateVisibleFiles(searchString) {
+  // Update 'visibleFiles.'
+  doSearch(searchString) {
     const downcasedSearchString = searchString.toLowerCase();
     // Display no files on an empty search.
     if (downcasedSearchString === '') {
@@ -149,16 +144,36 @@ class SongList extends React.Component {
     this.setState({ visibleFiles: filtered });
   }
 
+  // Marks this search string as a 'checkpoint', saving it in the URL and enabling us to use the
+  // back button to come back to it later.
+  saveSearchString(string) {
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('search', string);
+    
+    // See https://developer.mozilla.org/en-US/docs/Web/API/History/pushState . In particular: most
+    // browsers ignore the second argument so we pass the empty string.
+    window.history.pushState(
+      { searchString: string },
+      '',
+      window.location.origin + window.location.pathname + '?' + urlParams.toString()
+    );
+  }
+
   onEnded(filename) {
     const justEndedSongIndex = this.state.visibleFiles.indexOf(filename);
     const nextUpSongIndex = justEndedSongIndex + 1;
 
+    let newCurrentlyPlaying = this.state.currentlyPlaying;
+    newCurrentlyPlaying = newCurrentlyPlaying.filter((f) => f !== filename); // stop this song
+
     if (nextUpSongIndex < this.state.visibleFiles.length) {
       const nextSong = this.state.visibleFiles[nextUpSongIndex];
-      this.startPlaying(nextSong);
+      newCurrentlyPlaying.push(nextSong);
     } else {
       // If we're at the end, do nothing.
     }
+
+    this.setState({ currentlyPlaying: newCurrentlyPlaying });
   }
 
   startPlaying(filename) {
@@ -166,7 +181,7 @@ class SongList extends React.Component {
   }
 
   stopPlaying(filename) {
-    this.setState({ currentlyPlaying: this.state.currentlyPlaying.filter((f) => f !== filename) })
+    this.setState({ currentlyPlaying: this.state.currentlyPlaying.filter((f) => f !== filename) });
   }
 }
 

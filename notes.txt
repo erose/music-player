@@ -25,5 +25,6 @@ TODOS:
     - Implementation: X
     - Tests: O
   - Don't wait until the data is loaded to render the search box.
-    - Implementation: O
+    - Implementation: X
+    - Tests: X
   - Preserve album order.
