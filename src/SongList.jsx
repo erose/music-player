@@ -103,15 +103,12 @@ class SongList extends React.Component {
           url={this.props.s3Url + filename}
           isPlaying={isPlaying}
           key={key}
+          filename={filename}
 
           onPlayPressed={() => this.startPlaying(filename)}
           onPausePressed={() => this.stopPlaying(filename)}
           onEnded={() => this.onEnded(filename)}
         />
-
-        <span className={isPlaying ? 'filename playing' : 'filename'}>
-          {filename}
-        </span>
       </div>
     );
   }
