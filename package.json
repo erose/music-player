@@ -23,6 +23,7 @@
   "eslintConfig": {
     "extends": "react-app"
   },
+  "homepage": "https://reallyeli.com/music-player",
   "browserslist": {
     "production": [
       ">0.2%",

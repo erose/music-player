@@ -76,6 +76,8 @@ class SongList extends React.Component {
           autoFocus={true}
           value={this.state.searchString}
           role={'searchbox'}
+          spellCheck="false"
+          onFocus={(event) => event.target.select()}
           onChange={(event) => this.onSearchTermChanged(event.target.value)}
         />
 

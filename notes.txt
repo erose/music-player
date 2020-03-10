@@ -28,3 +28,9 @@ TODOS:
     - Implementation: X
     - Tests: X
   - Preserve album order.
+  - Fix orange play button on Android. (use images probably.)
+  - Make sure loading spinner actually spins.
+  - Improve clickability.
+    - Provide a way to stop loading a song that's loading.
+  - Easily clear the searchbox.
+    - Implementation: X

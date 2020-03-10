@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import './Audio.scss';
+import spinner from './spinner.ico';
 
 // Enum.
 const loading = 'loading';
@@ -42,7 +43,7 @@ class Audio extends React.Component {
       return (
         <div className='Audio'>
           <div className='loading-spinner-container' role="button">
-            <img role="img" src='/spinner.ico' className='spinner' alt='' aria-label="Play"></img>
+            <img role="img" src={spinner} className='spinner' alt='' aria-label="Play"></img>
 
             <audio autoPlay={true} onCanPlay={() => this.onLoadingFinished()}>
               <source src={this.props.url}/>
