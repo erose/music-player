@@ -172,15 +172,33 @@ class SongList extends React.Component {
       // If we're at the end, do nothing.
     }
 
-    this.setState({ currentlyPlaying: newCurrentlyPlaying });
+    this.setState({ currentlyPlaying: newCurrentlyPlaying }, () => this.setDocumentTitle());
   }
 
   startPlaying(filename) {
-    this.setState({ currentlyPlaying: this.state.currentlyPlaying.concat(filename) });
+    this.setState(
+      { currentlyPlaying: this.state.currentlyPlaying.concat(filename) },
+      () => this.setDocumentTitle()
+    );
   }
 
   stopPlaying(filename) {
-    this.setState({ currentlyPlaying: this.state.currentlyPlaying.filter((f) => f !== filename) });
+    this.setState(
+      { currentlyPlaying: this.state.currentlyPlaying.filter((f) => f !== filename) },
+      () => this.setDocumentTitle()
+    );
+  }
+
+  setDocumentTitle() {
+    const filename = this.state.currentlyPlaying[0];
+    // We just want to show the base part of the filename — not the artist or album.
+    const toDisplay = filename && _.last(filename.split('/'));
+
+    if (toDisplay) {
+      document.title = `🎶 — ${toDisplay}`;
+    } else {
+      document.title = `🎶`;
+    }
   }
 }
 
