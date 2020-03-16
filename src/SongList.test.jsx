@@ -46,34 +46,35 @@ test('Filtering works.', () => {
 });
 
 test('Clicking on a song toggles a class name.', () => {
-  const { getByText, getByRole } = render(songList);
+  const { getByText, getByRole, getByLabelText } = render(songList);
   fireEvent.change(getByRole('searchbox'), { target: { value: 'Zoo' }});
   jest.advanceTimersByTime(1000); // wait 1 second
 
   expect(getByText(/Zoo Station/)).not.toHaveClass('playing');
 
-  fireEvent.click(getByRole('button'));
+  fireEvent.click(getByLabelText('Play').parentNode);
 
   expect(getByText(/Zoo Station/)).toHaveClass('playing');
 
   // We need to get through the 'loading' phase, so we manually fire the canPlay event.
-  const audioElement = getByRole('button').getElementsByTagName('audio')[0];
+  const audioElement = document.getElementsByTagName('audio')[0];
   fireEvent.canPlay(audioElement);
 
-  fireEvent.click(getByRole('button'));
+  fireEvent.click(getByLabelText('Pause').parentNode);
 
   expect(getByText(/Zoo Station/)).not.toHaveClass('playing');
 });
 
 test('Play the next song after this one finishes.', () => {
-  const { getAllByRole, getByText, getByRole } = render(songList);
+  const { getByText, getAllByLabelText, getByRole } = render(songList);
 
   fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
   jest.advanceTimersByTime(1000); // wait 1 second
 
-  fireEvent.click(getAllByRole('button')[0]);
+  const playButton = getAllByLabelText('Play')[0].parentNode;
+  fireEvent.click(playButton);
   // We need to get through the 'loading' phase, so we manually fire the canPlay event.
-  const audioElement = getAllByRole('button')[0].getElementsByTagName('audio')[0];
+  const audioElement = document.getElementsByTagName('audio')[0];
   fireEvent.canPlay(audioElement);
   // And then we jump forward to when the song has ended by firing the ended event.
   fireEvent.ended(audioElement);

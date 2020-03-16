@@ -29,6 +29,9 @@ class SongList extends React.Component {
       
       currentlyPlaying: [], // a list of filename strings (many songs can be playing at once).
     };
+
+    // We maintain a ref to the search box so we can have buttons that focus on it.
+    this.searchBoxRef = React.createRef();
   }
 
   componentDidMount() {
@@ -71,21 +74,32 @@ class SongList extends React.Component {
 
     return (
       <div className='SongList'>
-        <input
-          placeholder="Search..."
-          autoFocus={true}
-          value={this.state.searchString}
-          role={'searchbox'}
-          spellCheck="false"
-          onFocus={(event) => event.target.select()}
-          onChange={(event) => this.onSearchTermChanged(event.target.value)}
-        />
+        <div>
+          <input
+            placeholder="Search..."
+            autoFocus={true}
+            value={this.state.searchString}
+            role={'searchbox'}
+            spellCheck="false"
+            ref={this.searchBoxRef}
+            onFocus={(event) => event.target.select()}
+            onChange={(event) => this.onSearchTermChanged(event.target.value)}
+          />
+
+          <button onClick={() => this.onNewClicked()}>
+            New Search
+          </button>
+        </div>
 
         <div style={{marginTop: '1rem'}}>
           {(visibleFiles && visibleFiles.map(this.renderFile)) || loadingIndicator}
         </div>
       </div>
     );
+  }
+
+  onNewClicked() {
+    this.searchBoxRef.current.select();
   }
 
   renderFile = (filename) => {

@@ -29,7 +29,7 @@ TODOS:
     - Tests: X
   - Preserve album order.
   - Set document title.
-    - Implementation: O
+    - Implementation: X
     - Tests: O
   - Make sure loading spinner actually spins.
   - Fix orange play button on Android. (use images probably.) X
