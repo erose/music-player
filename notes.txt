@@ -18,25 +18,13 @@ OK, I like the S3 idea.
 3-8-20
 
 TODOS:
-  - Play the next song (within album?) after you're finished.
-    - Implementation: X
-    - Tests: X
+  - Preserve album order.
   - Search string should show up as a queryparam (and be loaded from a queryparam.)
     - Implementation: X
     - Tests: O
-  - Don't wait until the data is loaded to render the search box.
-    - Implementation: X
-    - Tests: X
-  - Preserve album order.
   - Set document title.
     - Implementation: X
     - Tests: O
-  - Make sure loading spinner actually spins.
-  - Fix orange play button on Android. (use images probably.) X
-  - Improve clickability. X
-    - Provide a way to stop loading a song that's loading. X
-  - Easily clear the searchbox.
-    - Implementation: X
   - Cool visual effects as the music is playing?
     - Implementation: O
     - Tests: O

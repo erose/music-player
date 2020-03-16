@@ -33,7 +33,7 @@ class Audio extends React.Component {
     if (!this.props.isPlaying) {
       return (
         <div className='Audio' onClick={() => this.onPlayPressed()}>
-          <div className='play-pause-symbol-container' role="button">
+          <div className='icon-container play-pause' role="button">
             <span role="img" className='play-symbol' aria-label="Play">></span>
           </div>
 
@@ -49,7 +49,7 @@ class Audio extends React.Component {
       // the <audio> element that is rendered in the other case of this function.
       return (
         <div className='Audio' onClick={() => this.onPausePressed()}>
-          <div className='loading-spinner-container' role="button">
+          <div className='icon-container loading-spinner' role="button">
             <img role="img" src={spinner} className='spinner' alt='' aria-label="Play"></img>
 
             <audio autoPlay={true} onCanPlay={() => this.onLoadingFinished()}>
@@ -67,7 +67,7 @@ class Audio extends React.Component {
     if (this.state.loadingStatus === loaded) {
       return (
         <div className='Audio' onClick={() => this.onPausePressed()}>
-          <div className='play-pause-symbol-container' role="button">
+          <div className='icon-container play-pause' role="button">
             <span role="img" className='pause-symbol' aria-label="Pause">|  |</span>
             
             <audio autoPlay={true} onEnded={() => this.props.onEnded()}>
