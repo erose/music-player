@@ -52,7 +52,7 @@ test('Clicking on a song toggles a class name.', () => {
 
   expect(getByText(/Zoo Station/)).not.toHaveClass('playing');
 
-  fireEvent.click(getByLabelText('Play').parentNode);
+  fireEvent.click(getByLabelText('Play'));
 
   expect(getByText(/Zoo Station/)).toHaveClass('playing');
 
@@ -60,9 +60,31 @@ test('Clicking on a song toggles a class name.', () => {
   const audioElement = document.getElementsByTagName('audio')[0];
   fireEvent.canPlay(audioElement);
 
-  fireEvent.click(getByLabelText('Pause').parentNode);
+  fireEvent.click(getByLabelText('Pause'));
 
   expect(getByText(/Zoo Station/)).not.toHaveClass('playing');
+});
+
+test('Clicking on a song toggles the document title.', () => {
+  const { getByText, getByRole, getByLabelText } = render(songList);
+
+  const spy = jest.spyOn(document, 'title', 'set');
+  fireEvent.change(getByRole('searchbox'), { target: { value: 'Zoo' }});
+  jest.advanceTimersByTime(1000); // wait 1 second
+
+  expect(spy).not.toHaveBeenCalled();
+
+  fireEvent.click(getByLabelText('Play'));
+
+  expect(spy).toHaveBeenLastCalledWith(`🎶 — 01 - Zoo Station.mp3`);
+
+  // We need to get through the 'loading' phase, so we manually fire the canPlay event.
+  const audioElement = document.getElementsByTagName('audio')[0];
+  fireEvent.canPlay(audioElement);
+
+  fireEvent.click(getByLabelText('Pause'));
+
+  expect(spy).toHaveBeenLastCalledWith(`🎶`);
 });
 
 test('Play the next song after this one finishes.', () => {
@@ -71,8 +93,8 @@ test('Play the next song after this one finishes.', () => {
   fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
   jest.advanceTimersByTime(1000); // wait 1 second
 
-  const playButton = getAllByLabelText('Play')[0].parentNode;
-  fireEvent.click(playButton);
+  const firstPlayButton = getAllByLabelText('Play')[0];
+  fireEvent.click(firstPlayButton);
   // We need to get through the 'loading' phase, so we manually fire the canPlay event.
   const audioElement = document.getElementsByTagName('audio')[0];
   fireEvent.canPlay(audioElement);
@@ -83,6 +105,47 @@ test('Play the next song after this one finishes.', () => {
   expect(getByText(/Zoo Station/)).not.toHaveClass('playing');
 
   // Check that the next song is playing.
+  expect(getByText(/One/)).toHaveClass('playing');
+});
+
+test('Clicking play on another song will stop playing the previous song.', () => {
+  const { getByText, getAllByLabelText, getByRole } = render(songList);
+
+  fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
+  jest.advanceTimersByTime(1000); // wait 1 second
+
+  const firstPlayButton = getAllByLabelText('Play')[0];
+  fireEvent.click(firstPlayButton);
+
+  // Check that the song is playing.
+  expect(getByText(/Zoo Station/)).toHaveClass('playing');
+
+  const secondPlayButton = getAllByLabelText('Play')[1];
+  fireEvent.click(secondPlayButton);
+
+  // Check that the previous song is not playing, but the next one is.
+  expect(getByText(/Zoo Station/)).not.toHaveClass('playing');
+  expect(getByText(/One/)).toHaveClass('playing');
+});
+
+test('Clicking play on another song will *not* stop playing the previous song if the ctrl key is held down.', () => {
+  const { getByText, getAllByLabelText, getByRole } = render(songList);
+
+  fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
+  jest.advanceTimersByTime(1000); // wait 1 second
+
+  const firstPlayButton = getAllByLabelText('Play')[0];
+  fireEvent.keyDown(document, { key: 'Control' });
+  fireEvent.click(firstPlayButton);
+
+  // Check that the song is playing.
+  expect(getByText(/Zoo Station/)).toHaveClass('playing');
+
+  const secondPlayButton = getAllByLabelText('Play')[1];
+  fireEvent.click(secondPlayButton);
+
+  // Check that the previous song is not playing, but the next one is.
+  expect(getByText(/Zoo Station/)).toHaveClass('playing');
   expect(getByText(/One/)).toHaveClass('playing');
 });
 
@@ -109,8 +172,14 @@ test('Searching and then clicking back undoes the search.', () => {
 test('Searching populates a query param.', () => {
   const { queryByText, getByRole } = render(songList);
 
-  fireEvent.change(getByRole('searchbox'), { target: { value: 'U2' }});
+  jest.spyOn(window.history, 'pushState').mockImplementation(() => null);
+  
+  fireEvent.change(getByRole('searchbox'), { target: { value: 'Songs of' }});
   jest.advanceTimersByTime(1000); // wait 1 second
-
-  expect(window.location.search).toBe('?search=U2');
+  
+  expect(window.history.pushState).toHaveBeenCalledWith(
+    { searchString: 'Songs of' },
+    '',
+    expect.stringMatching(/\?search=Songs\+of/),
+  );
 });

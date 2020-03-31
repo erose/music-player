@@ -19,12 +19,6 @@ OK, I like the S3 idea.
 
 TODOS:
   - Preserve album order.
-  - Search string should show up as a queryparam (and be loaded from a queryparam.)
-    - Implementation: X
-    - Tests: O
-  - Set document title.
-    - Implementation: X
-    - Tests: O
   - Cool visual effects as the music is playing?
     - Implementation: O
     - Tests: O

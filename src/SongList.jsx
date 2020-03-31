@@ -28,6 +28,7 @@ class SongList extends React.Component {
       searchString: props.searchString || '',
       
       currentlyPlaying: [], // a list of filename strings (many songs can be playing at once).
+      ctrlKeyDepressed: false, // some extra behavior is enabled when this is true.
     };
 
     // We maintain a ref to the search box so we can have buttons that focus on it.
@@ -37,11 +38,16 @@ class SongList extends React.Component {
   componentDidMount() {
     // Allows use of the 'back' button to go between searches.
     window.addEventListener('popstate', this.handleOnPopState);
+
+    // Allows us to track whether the ctrl key is pressed.
+    window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keyup', this.handleKeyUp);
   }
 
   componentWillUnmount() {
-    // Allows use of the 'back' button to go between searches.
     window.removeEventListener('popstate', this.handleOnPopState);
+    window.removeEventListener('keydown', this.handleKeyDown);
+    window.removeEventListener('keyup', this.handleKeyUp);
 
     // Cancel any doSearches that may be waiting to run.
     if (this.currentTimeoutId) {
@@ -57,6 +63,18 @@ class SongList extends React.Component {
 
     this.setState({ searchString, });
     this.doSearch(searchString);
+  }
+
+  handleKeyDown = (event) => {
+    if (event.key === 'Control') {
+      this.setState({ ctrlKeyDepressed: true });
+    }
+  }
+
+  handleKeyUp = (event) => {
+    if (event.key === 'Control') {
+      this.setState({ ctrlKeyDepressed: false }); 
+    }
   }
 
   // If the available filenames change, we need to redo our search. 
@@ -110,11 +128,12 @@ class SongList extends React.Component {
     // https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html#recommendation-fully-uncontrolled-component-with-a-key
     // .
     const key = `${filename}-${isPlaying}`;
+    const url = this.props.s3Url + encodeURIComponent(filename);
 
     return (
       <div className='file-container' key={filename}>
         <Audio
-          url={this.props.s3Url + filename}
+          url={url}
           isPlaying={isPlaying}
           key={key}
           filename={filename}
@@ -190,10 +209,16 @@ class SongList extends React.Component {
   }
 
   startPlaying(filename) {
-    this.setState(
-      { currentlyPlaying: this.state.currentlyPlaying.concat(filename) },
-      () => this.setDocumentTitle()
-    );
+    // We allow the user to play multiple songs at the same time if they hold down the control key
+    // when clicking on a new song to be played.
+    let newCurrentlyPlaying;
+    if (this.state.ctrlKeyDepressed) {
+      newCurrentlyPlaying = this.state.currentlyPlaying.concat([filename]);
+    } else {
+      newCurrentlyPlaying = [filename];
+    }
+
+    this.setState({ currentlyPlaying: newCurrentlyPlaying }, () => this.setDocumentTitle());
   }
 
   stopPlaying(filename) {
