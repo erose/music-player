@@ -15,10 +15,49 @@ OK, I like the S3 idea.
 
 *****
 
+Here's the waveform-drawing code in case I need it.
+
+{/*
+<div>
+  <canvas ref={this.canvas}>
+  </canvas>
+</div>
+*/}
+
+// const WIDTH = 400;
+// const HEIGHT = 200;
+// const canvasCtx = this.canvas.current.getContext('2d');
+// canvasCtx.fillStyle = 'rgb(200, 200, 200)';
+// canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+
+// canvasCtx.lineWidth = 2;
+// canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
+
+// const sliceWidth = WIDTH * 1.0 / bufferLength;
+// let x = 0;
+
+// canvasCtx.beginPath();
+// for (var i = 0; i < bufferLength; i++) {
+//   const v = dataArray[i]/128.0;
+//   const y = v * HEIGHT/2;
+
+//   if(i === 0)
+//     canvasCtx.moveTo(x, y);
+//   else
+//     canvasCtx.lineTo(x, y);
+
+//   x += sliceWidth;
+// }
+
+// canvasCtx.lineTo(WIDTH, HEIGHT/2);
+// canvasCtx.stroke();
+
+*****
+
 3-8-20
 
 TODOS:
   - Preserve album order.
   - Cool visual effects as the music is playing?
-    - Implementation: O
-    - Tests: O
+    - Implementation: X
+    - Tests: haha

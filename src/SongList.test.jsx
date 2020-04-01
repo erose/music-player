@@ -2,9 +2,15 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 
 import SongList from './SongList';
+import AudioVisualizer from './audio-visualizer';
+jest.mock('./audio-visualizer');
 
 // When code calls setTimeout, we don't want to actually have to wait.
 jest.useFakeTimers();
+
+beforeEach(() => {
+  AudioVisualizer.mockClear();
+});
 
 // Shared.
 const songList = (<SongList

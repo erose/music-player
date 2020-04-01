@@ -1,8 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 
 import './Audio.scss';
 import spinner from './spinner.ico';
+
+import AudioVisualizer from './audio-visualizer';
 
 // Enum.
 const loading = 'loading';
@@ -21,10 +24,22 @@ class Audio extends React.Component {
 
   constructor(props) {
     super(props);
-
     this.state = {
       loadingStatus: props.isPlaying ? loading : null,
     }
+
+    this.audioElement = null; // TODO explain
+    this.canvas = React.createRef(); // TODO explain
+    this.currentAnimationId = null; // TODO explain
+  }
+
+  componentWillUnmount() {
+    // Cancel any getDataFromAnalyser calls that may be waiting to run.
+    if (this.currentIntervalId) {
+      clearInterval(this.currentIntervalId);
+    }
+
+    this.stopVisualization();
   }
 
   render() {
@@ -52,7 +67,7 @@ class Audio extends React.Component {
           <div className='icon-container loading-spinner' role="button">
             <img role="img" src={spinner} className='spinner' alt='' aria-label="Play"></img>
 
-            <audio autoPlay={true} onCanPlay={() => this.onLoadingFinished()}>
+            <audio autoPlay={true} crossOrigin='anonymous' onCanPlay={() => this.onLoadingFinished()}>
               <source src={this.props.url}/>
             </audio>
           </div>
@@ -70,7 +85,7 @@ class Audio extends React.Component {
           <div className='icon-container play-pause' role="button">
             <span role="img" className='pause-symbol' aria-label="Pause">|  |</span>
             
-            <audio autoPlay={true} onEnded={() => this.props.onEnded()}>
+            <audio ref={this.onAudioElementRefAvailable} crossOrigin='anonymous' autoPlay={true} onEnded={() => this.props.onEnded()}>
               <source src={this.props.url}/>
             </audio>
           </div>
@@ -83,6 +98,20 @@ class Audio extends React.Component {
     }
   }
 
+  onAudioElementRefAvailable = (audioElement) => {
+    if (audioElement !== null) {
+      this.visualizer = new AudioVisualizer(audioElement);
+      this.currentAnimationId = requestAnimationFrame(this.draw);
+    }
+  }
+
+  draw = () => {
+    // Retrieve the color appropriate to this moment in the song, and set it.
+    document.body.style.backgroundColor = this.visualizer.getColor();
+
+    this.currentAnimationId = requestAnimationFrame(this.draw);
+  }
+
   onPlayPressed() {
     this.props.onPlayPressed();
   }
@@ -92,7 +121,14 @@ class Audio extends React.Component {
   }
 
   onPausePressed() {
+    this.stopVisualization();
     this.props.onPausePressed();
+  }
+
+  stopVisualization() {
+    document.body.style.backgroundColor = '';
+    cancelAnimationFrame(this.currentAnimationId);
+    this.currentAnimationId = null;
   }
 }
 

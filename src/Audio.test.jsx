@@ -2,10 +2,16 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 
 import Audio from './Audio';
+import AudioVisualizer from './audio-visualizer';
+jest.mock('./audio-visualizer');
 
 // Shared.
 const url = 'https://elis-music.s3.us-east-2.amazonaws.com/U2/Achtung Baby/01 - Zoo Station.mp3';
 const id = (x) => x;
+
+beforeEach(() => {
+  AudioVisualizer.mockClear();
+});
 
 test('Can render.', () => {
   render(<Audio url={url} isPlaying={false} filename={'foo.mp3'} onPlayPressed={id} onPausePressed={id}/>);
