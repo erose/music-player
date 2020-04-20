@@ -11,3 +11,4 @@ rsa==3.4.2
 s3transfer==0.3.3
 six==1.14.0
 urllib3==1.25.8
+youtube-dl==2020.3.24
