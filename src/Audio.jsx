@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash';
 
 import './Audio.scss';
+import play from './play.svg';
+import pause from './pause.svg';
 import spinner from './spinner.ico';
 
 import AudioVisualizer from './audio-visualizer';
@@ -16,6 +17,7 @@ class Audio extends React.Component {
     url: PropTypes.string.isRequired,
     isPlaying: PropTypes.bool.isRequired,
     filename: PropTypes.string.isRequired,
+    doVisualization: PropTypes.bool.isRequired,
 
     onPlayPressed: PropTypes.func.isRequired,
     onPausePressed: PropTypes.func.isRequired,
@@ -49,7 +51,7 @@ class Audio extends React.Component {
       return (
         <div className='Audio' onClick={() => this.onPlayPressed()}>
           <div className='icon-container play-pause' role="button">
-            <span role="img" className='play-symbol' aria-label="Play">></span>
+            <img src={play} className='play-symbol' alt='' aria-label="Play"/>
           </div>
 
           <div className={filenameClassName}>
@@ -65,7 +67,7 @@ class Audio extends React.Component {
       return (
         <div className='Audio' onClick={() => this.onPausePressed()}>
           <div className='icon-container loading-spinner' role="button">
-            <img role="img" src={spinner} className='spinner' alt='' aria-label="Play"></img>
+            <img src={spinner} className='spinner' alt='' aria-label="Play"/>
 
             <audio autoPlay={true} crossOrigin='anonymous' onCanPlay={() => this.onLoadingFinished()}>
               <source src={this.props.url}/>
@@ -83,7 +85,7 @@ class Audio extends React.Component {
       return (
         <div className='Audio' onClick={() => this.onPausePressed()}>
           <div className='icon-container play-pause' role="button">
-            <span role="img" className='pause-symbol' aria-label="Pause">|  |</span>
+            <img src={pause} className='pause-symbol' alt='' aria-label="Pause"/>
             
             <audio ref={this.onAudioElementRefAvailable} crossOrigin='anonymous' autoPlay={true} onEnded={() => this.props.onEnded()}>
               <source src={this.props.url}/>
@@ -99,7 +101,7 @@ class Audio extends React.Component {
   }
 
   onAudioElementRefAvailable = (audioElement) => {
-    if (audioElement !== null) {
+    if (this.props.doVisualization && audioElement !== null) {
       this.visualizer = new AudioVisualizer(audioElement);
       this.currentAnimationId = requestAnimationFrame(this.draw);
     }

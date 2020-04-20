@@ -1,2 +1,19 @@
 .SongList {
+  .header {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .search-box {
+    height: 1rem;    
+  }
+
+  .party-mode-toggle {
+    width: 10rem;
+    
+    .party-mode-toggle-button {
+      margin-left: 0.5rem;
+      cursor: pointer;
+    }
+  }
 }

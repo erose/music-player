@@ -189,3 +189,18 @@ test('Searching populates a query param.', () => {
     expect.stringMatching(/\?search=Songs\+of/),
   );
 });
+
+test('Clicking on a song triggers visualizations if party mode is on.', () => {
+  const { getByText, getByRole, getByLabelText } = render(songList);
+  fireEvent.change(getByRole('searchbox'), { target: { value: 'Zoo' }});
+  jest.advanceTimersByTime(1000); // wait 1 second
+
+  fireEvent.click(getByText('OFF')); // turn party mode on
+  fireEvent.click(getByLabelText('Play'));
+
+  // We need to get through the 'loading' phase, so we manually fire the canPlay event.
+  const audioElement = document.getElementsByTagName('audio')[0];
+  fireEvent.canPlay(audioElement);
+
+  expect(AudioVisualizer).toHaveBeenCalledTimes(1);
+});

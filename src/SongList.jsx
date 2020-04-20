@@ -29,6 +29,7 @@ class SongList extends React.Component {
       
       currentlyPlaying: [], // a list of filename strings (many songs can be playing at once).
       ctrlKeyDepressed: false, // some extra behavior is enabled when this is true.
+      partyMode: false, // if on, do cool visualizations when the songs are played.
     };
 
     // We maintain a ref to the search box so we can have buttons that focus on it.
@@ -90,23 +91,44 @@ class SongList extends React.Component {
     const visibleFiles = this.state.visibleFiles;
     const loadingIndicator = <span>Loading...</span>; // TODO: Make it cool.
 
+    // The goal here is to minimize the number of clicks a user has to make between loading the page
+    // and typing in a song name. On desktop, we autofocus so this number is 0. On mobile,
+    // autofocusing will not bring up the keyboard unless it happens as part of a user action, so we
+    // provide this "new search" button.
+
+     // This sniffing might be unreliable, but seems good enough given that the users are just me.
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    const newSearchButton = (
+      <button onClick={() => this.onNewClicked()}>
+        New Search
+      </button>
+    );
+
+    const partyModeText = this.state.partyMode ? 'ON' : 'OFF';
+    const partyModeToggle = (
+      <span className="party-mode-toggle">
+        Party mode
+        <button className="party-mode-toggle-button" onClick={() => this.setState({ partyMode: !this.state.partyMode })}>{partyModeText}</button>
+      </span>
+    );
+
     return (
       <div className='SongList'>
-        <div>
+        <div className='header'>
           <input
             placeholder="Search..."
             autoFocus={true}
             value={this.state.searchString}
             role={'searchbox'}
             spellCheck="false"
+            className="search-box"
             ref={this.searchBoxRef}
             onFocus={(event) => event.target.select()}
             onChange={(event) => this.onSearchTermChanged(event.target.value)}
           />
 
-          <button onClick={() => this.onNewClicked()}>
-            New Search
-          </button>
+          {isMobile ? newSearchButton : null}
+          {partyModeToggle}
         </div>
 
         <div style={{marginTop: '1rem'}}>
@@ -117,6 +139,7 @@ class SongList extends React.Component {
   }
 
   onNewClicked() {
+    // See render for explanation.
     this.searchBoxRef.current.select();
   }
 
@@ -137,6 +160,7 @@ class SongList extends React.Component {
           isPlaying={isPlaying}
           key={key}
           filename={filename}
+          doVisualization={this.state.partyMode}
 
           onPlayPressed={() => this.startPlaying(filename)}
           onPausePressed={() => this.stopPlaying(filename)}

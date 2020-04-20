@@ -58,6 +58,5 @@ Here's the waveform-drawing code in case I need it.
 
 TODOS:
   - Preserve album order.
-  - Cool visual effects as the music is playing?
-    - Implementation: X
-    - Tests: haha
+  - Play next song even when screen is sleeping
+    - Have to make a native app to do this. React Native?
