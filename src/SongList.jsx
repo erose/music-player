@@ -166,8 +166,35 @@ class SongList extends React.Component {
           onPausePressed={() => this.stopPlaying(filename)}
           onEnded={() => this.onEnded(filename)}
         />
+
+        <a className='lyrics-link' target='_blank' rel='noopener noreferrer' href={this.lyricsUrlFromFilename(filename)}>Lyrics</a>
       </div>
     );
+  }
+
+  /**
+   * @return {string, null} Null if the lyrics URL could not be constructed, for instance if the
+   *     filename doesn't seem to contain both an artist name and a song name.
+   */
+  lyricsUrlFromFilename(filename) {
+    const splits = filename.split('/');
+    if (splits.length < 2) {
+      return null;
+    }
+
+    let assumedArtistName = splits[0];
+    let assumedSongName = splits[splits.length - 1].replace(/\d+ - /g, '');
+
+    const dasherize = (s) => s.replace(/ +/g, '-');
+    assumedArtistName = dasherize(assumedArtistName);
+    assumedSongName = dasherize(assumedSongName);
+
+    // Genius seems to strip out exclamation points. I'm guessing it strips out other punctuation as
+    // well.
+    assumedArtistName = assumedArtistName.replace(/[!?.]/g, '');
+    assumedSongName = assumedSongName.replace(/[!?.]/g, '');
+
+    return `https://genius.com/${assumedArtistName}-${assumedSongName}-lyrics`;
   }
 
   onSearchTermChanged(string) {

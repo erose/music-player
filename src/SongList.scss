@@ -8,6 +8,20 @@
     height: 1rem;    
   }
 
+  .file-container {
+    display: flex;
+
+    .lyrics-link {
+      font: 400 10pt Arial;
+
+      display: flex;
+      align-items: center;
+
+      margin-left: 1rem;
+      margin-bottom: 0.5rem;
+    }
+  }
+
   .party-mode-toggle {
     width: 10rem;
     
