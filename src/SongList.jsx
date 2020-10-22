@@ -183,7 +183,10 @@ class SongList extends React.Component {
     }
 
     let assumedArtistName = splits[0];
-    let assumedSongName = splits[splits.length - 1].replace(/\d+ - /g, '');
+    let assumedSongName = splits[splits.length - 1].replace(/\d+( -)? /g, ''); // get rid of the track number
+
+    // Get rid of '.mp3'
+    assumedSongName = assumedSongName.replace(/\.mp3/, '');
 
     const dasherize = (s) => s.replace(/ +/g, '-');
     assumedArtistName = dasherize(assumedArtistName);
@@ -191,8 +194,9 @@ class SongList extends React.Component {
 
     // Genius seems to strip out exclamation points. I'm guessing it strips out other punctuation as
     // well.
-    assumedArtistName = assumedArtistName.replace(/[!?.]/g, '');
-    assumedSongName = assumedSongName.replace(/[!?.]/g, '');
+    const punctuationRegex = /[(!?.)]/g;
+    assumedArtistName = assumedArtistName.replace(punctuationRegex, '');
+    assumedSongName = assumedSongName.replace(punctuationRegex, '');
 
     return `https://genius.com/${assumedArtistName}-${assumedSongName}-lyrics`;
   }
