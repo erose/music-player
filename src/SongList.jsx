@@ -168,6 +168,7 @@ class SongList extends React.Component {
         />
 
         <a className='lyrics-link' target='_blank' rel='noopener noreferrer' href={this.lyricsUrlFromFilename(filename)}>Lyrics</a>
+        <a className='download-link' href={url}>Download (right click)</a>
       </div>
     );
   }
