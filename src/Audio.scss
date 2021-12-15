@@ -1,0 +1,52 @@
+.Audio {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  cursor: pointer;
+  &:hover, &:active {
+    background-color: lightGray;
+  }
+
+  .filename {
+    font: 400 10pt Arial;
+    margin-left: 0.25rem;
+    text-align: left;
+
+    &.playing {
+      font-weight: bold;
+    }
+  }
+
+  .icon-container {
+    /* Draw a box around the symbol. */
+    border: 1px solid darkGray;
+    /* Don't make the icon smaller to accommodate long filename text. */
+    flex-shrink: 0;
+
+    &.play-pause {
+      padding: 0.2rem;
+      width: 0.75rem;
+      height: 1rem;
+    }
+
+    &.loading-spinner {
+      width: calc(0.75rem + 0.2rem + 0.2rem);
+      height: calc(1rem + 0.2rem + 0.2rem);
+      cursor: pointer;
+    }
+  }
+
+  .play-symbol, .pause-symbol {
+    width: 0.5rem;
+
+    // Adjust it a little bit; the image is not centered.
+    position: relative;
+    left: 2px;
+  }
+
+  .spinner {
+    width: 100%;
+    display: block;
+  }
+}
